@@ -12,5 +12,5 @@ export async function hashPassword(password: string) {
 //
 
 export function verifyJwt(token: string) {
-  return jwt.verify(token, process.env.AUTH_SECRET!);
+  return jwt.verify(token, process.env.JWT_SECRET!);
 }

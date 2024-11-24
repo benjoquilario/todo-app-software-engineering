@@ -1,21 +1,32 @@
-import dotenv from 'dotenv';
 import express from 'express';
-import morgan from 'morgan';
-import { corsConfig } from './config/cors';
-// import bodyParser from 'body-parser';
-// import session from 'express-session';
+import session from 'express-session';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 import auth from './routes/auth';
 import todo from './routes/todo';
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(morgan('dev'));
-app.use(corsConfig);
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+app.use(
+  // @ts-ignore
+  session({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.get('/', (req, res) => {
   res.send('Hello World');

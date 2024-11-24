@@ -1,7 +1,6 @@
 import cors from 'cors';
 
 export const corsConfig = cors({
-  origin: '*',
+  origin: 'http://localhost:5173',
   credentials: true,
-  optionsSuccessStatus: 200,
 });

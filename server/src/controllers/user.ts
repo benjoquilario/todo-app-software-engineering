@@ -1,10 +1,11 @@
-import db from '../db';
-import { type Request, type Response } from 'express';
-import { credentialsValidators } from '../lib/validations/auth';
-import { comparePassword, hashPassword } from '../lib/utils';
+import { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
+import db from '../db';
+import { comparePassword, hashPassword } from '../lib/utils';
+import { credentialsValidators } from '../lib/validations/auth';
 
-export const createUser = async (req: Request, res: Response) => {
+// @ts-expect-error
+export const createUser: RequestHandler = async (req, res) => {
   const { email, password, firstName, lastName, confirmPassword } = req.body;
 
   try {
@@ -15,11 +16,11 @@ export const createUser = async (req: Request, res: Response) => {
     });
 
     if (isEmailExist) {
-      res.status(409).json({ message: 'Email already exists' });
+      return res.status(409).json({ message: 'Email already exists' });
     }
 
     if (password !== confirmPassword) {
-      res.status(400).json({ message: 'Passwords do not match' });
+      return res.status(400).json({ message: 'Passwords do not match' });
     }
 
     const hashedPassword = await hashPassword(password);
@@ -32,13 +33,14 @@ export const createUser = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(200).json({ message: 'User created successfully' });
+    return res.status(200).json({ message: 'User created successfully' });
   } catch (error) {
     res.status(400).json({ error: error });
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+// @ts-expect-error
+export const login: RequestHandler = async (req, res) => {
   const validatedFiels = credentialsValidators.safeParse(req.body);
 
   try {
@@ -51,32 +53,34 @@ export const login = async (req: Request, res: Response) => {
         },
       });
 
-      if (!user) res.status(401).json({ message: 'Email does not exist' });
+      if (!user)
+        return res.status(401).json({ message: 'Email does not exist' });
 
       const isPasswordCorrect = await comparePassword(
         password,
         user?.password!
       );
 
-      if (!isPasswordCorrect)
-        res.status(401).json({ message: 'Invalid password' });
+      if (!isPasswordCorrect) {
+        return res.status(401).json({ message: 'Invalid password' });
+      }
 
-      // Generate token
       const token = jwt.sign(
+        { sub: user?.id, name: user?.name },
+        process.env.JWT_SECRET!,
         {
-          email: user?.email,
-          id: user?.id,
-        },
-        process.env.AUTH_SECRET!,
-        {
-          expiresIn: '10h',
-          algorithm: 'HS256',
+          expiresIn: '90d',
         }
       );
 
-      res
-        .status(200)
-        .json({ message: 'Login successful', token, result: user });
+      res.cookie('token', token, {
+        maxAge: 30 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'none',
+        secure: false,
+      });
+
+      res.redirect('http://localhost:5173');
     }
   } catch (error) {
     res.status(400).json({ error: error });

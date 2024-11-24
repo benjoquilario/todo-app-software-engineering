@@ -1,39 +1,37 @@
-import jwt from 'jsonwebtoken';
 import { RequestHandler } from 'express';
-import { verifyJwt } from '../../lib/utils';
+import jwt from 'jsonwebtoken';
 import db from '../../db';
+import { verifyJwt } from '../../lib/utils';
 
+// @ts-ignore
 export const refresh: RequestHandler = async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.cookies?.token;
 
-  if (!token) {
-    res.status(401).json({ message: 'Unauthorized' });
-  }
+  console.log(token);
+
+  if (!token)
+    return res
+      .status(401)
+      .json({ error: 'Refresh token does not exist or has expired already.' });
 
   try {
     const decoded = verifyJwt(token);
+
     const user = await db.user.findUnique({
       where: {
         id: decoded.sub as string,
       },
     });
 
-    if (!user) res.sendStatus(401);
+    if (!user) return res.sendStatus(401);
 
     const accessToken = jwt.sign(
-      {
-        email: user?.email,
-        sub: user?.id,
-        name: user?.name,
-      },
-      process.env.AUTH_SECRET!,
-      {
-        expiresIn: '10h',
-        algorithm: 'HS256',
-      }
+      { sub: user.id, name: user.name },
+      process.env.JWT_SECRET!,
+      { expiresIn: '2h' }
     );
 
-    res.send({ accessToken, user });
+    return res.send({ accessToken, user });
   } catch (error) {
     res.sendStatus(400);
   }

@@ -1,18 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ESNext",
     "module": "commonjs",
-    "rootDir": "./src",
-    "moduleResolution": "node",
-    "declaration": true,
-    "sourceMap": true,
     "outDir": "./dist",
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node",
+    "rootDir": "./src",
+    "esModuleInterop": true,
     "strict": true,
-    "skipLibCheck": true
-  },
-  "lib": ["esnext"],
-  "include": ["src"],
-  "typeRoots": ["./node_module/@types", "./src/types"]
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */
+  }
 }
