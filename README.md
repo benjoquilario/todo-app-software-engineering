@@ -7,6 +7,8 @@ Basic to-do list application
 Benjo M. Quilario - 19002885200
 Diaz, Josh Angelo Shane M. - 22013841210
 Uy, Cian Kendall Eric L. - 20000472810
+Beltran, Carl Aldrich - 22013542010
+Franco, Tristan Jessie - 22010881310
 
 ## Run locally
 
